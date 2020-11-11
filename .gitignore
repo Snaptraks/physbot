@@ -11,5 +11,6 @@ __pycache__/
 !requirements.txt
 
 # Config files
+.gitignore
 config.py
 lexique_physique_filtre.txt
