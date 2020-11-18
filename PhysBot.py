@@ -53,6 +53,7 @@ if __name__ == '__main__':
         'cogs.physum',
         'cogs.information',
         'cogs.games',
+        'cogs.TeX',
     ]
 
     for extension in startup_extensions:
