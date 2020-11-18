@@ -1,15 +1,25 @@
 FROM python:3.8-slim
 
+# install linux packages
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git && \
+    apt-get install -y --no-install-recommends wget git poppler-utils && \
     apt-get purge -y --auto-remove && \
     rm -rf /var/lib/apt/lists/*
+
+# install TeX packages
+COPY texlive-profile.txt /tmp
+RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz && \
+    tar -xzf install-tl-unx.tar.gz && \
+    install-tl-20*/install-tl --profile=/tmp/texlive-profile.txt && \
+    rm -rf install-tl-*
+ENV PATH=/usr/local/texlive/bin/x86_64-linux:$PATH
+RUN tlmgr install preview varwidth amsmath
 
 WORKDIR .
 
 ENV PYTHONUNBUFFERED 1
 
-# install required packages
+# install Python packages
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
