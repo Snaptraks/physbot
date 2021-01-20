@@ -79,7 +79,7 @@ class TeX(commands.Cog):
 
             content = f"> {match.strip('$')}"
             file = discord.File(f"{LATEX_TEMP_PATH}{tempfile}-1.png")
-            await message.channel.send(content=content, file=file)
+            await message.reply(content=content, file=file)
 
     @tasks.loop(hours=1)
     async def clean_temp_folder(self, expiration):
