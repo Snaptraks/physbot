@@ -69,6 +69,7 @@ if __name__ == '__main__':
         'cogs.information',
         'cogs.games',
         'cogs.TeX',
+        'cogs.WolframAlpha',
     ]
 
     for extension in startup_extensions:
