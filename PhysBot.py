@@ -51,12 +51,14 @@ class PhysBot(commands.Bot):
 if __name__ == '__main__':
 
     intents = discord.Intents.all()
+    allowed_mentions = discord.AllowedMentions(replied_user=False)
 
     bot = PhysBot(
         description="Bot pour le serveur Discord de la PHYSUM!",
         command_prefix=["p.", "P."],
         activity=discord.Game(name="aider la Physum"),
         intents=intents,
+        allowed_mentions=allowed_mentions,
         db_name='db/physbot.db',
     )
 
