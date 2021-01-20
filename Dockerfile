@@ -8,10 +8,13 @@ RUN apt-get update && \
 
 # install TeX packages
 COPY texlive-profile.txt /tmp
-RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz && \
-    tar -xzf install-tl-unx.tar.gz && \
-    install-tl-20*/install-tl --profile=/tmp/texlive-profile.txt && \
-    rm -rf install-tl-*
+RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz; \
+	mkdir /install-tl-unx; \
+	tar -xvf install-tl-unx.tar.gz -C /install-tl-unx --strip-components=1; \
+    echo "selected_scheme scheme-basic" >> /install-tl-unx/texlive.profile; \
+	/install-tl-unx/install-tl -profile /tmp/texlive-profile.txt; \
+    rm -r /install-tl-unx; \
+	rm install-tl-unx.tar.gz
 ENV PATH=/usr/local/texlive/bin/x86_64-linux:$PATH
 RUN tlmgr install preview varwidth amsmath
 
