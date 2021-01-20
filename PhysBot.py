@@ -1,10 +1,18 @@
 import aiosqlite
+import aiohttp
 import discord
 from discord.ext import commands
 
 import config
 
 __version__ = "0.2"
+
+
+async def create_http_session(loop):
+    """Create an async HTTP session. Required to be from an async function
+    by aiohttp>=3.5.4
+    """
+    return aiohttp.ClientSession(loop=loop)
 
 
 async def create_db_connection(db_name):
@@ -22,6 +30,10 @@ class PhysBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Create HTTP session
+        self.http_session = self.loop.run_until_complete(
+            create_http_session(self.loop))
+
         # Make DB connection, save in memory if no name is provided
         self.db = self.loop.run_until_complete(
             create_db_connection(kwargs.get('db_name', ':memory:')))
@@ -31,6 +43,7 @@ class PhysBot(commands.Bot):
     async def close(self):
         """Close the DB connection and HTTP session."""
 
+        await self.http_session.close()
         await self.db.close()
         await super().close()
 
