@@ -57,13 +57,17 @@ class TeX(commands.Cog):
     async def on_message(self, message):
         """Parse the message to check if there is a valid LaTeX equation."""
 
-        matches = re.findall(r'\$.*?(?<!\\\\)\$', message.content)
+        if message.author.bot:
+            return
+
+        matches = re.findall(r'\`\$.*?(?<!\\\\)\$\`', message.content)
 
         for i, match in enumerate(matches):
             tempfile = f'{message.id}_{i}'
+            match_strip = match.strip("$").strip("`")
 
             with open(f'{LATEX_TEMP_PATH}{tempfile}.tex', 'w') as f:
-                f.write(LATEX_FILE.replace("%equation%", match.strip("$")))
+                f.write(LATEX_FILE.replace("%equation%", match_strip))
 
             for cmd in get_latex_cmds(tempfile):
                 process = await asyncio.create_subprocess_exec(
