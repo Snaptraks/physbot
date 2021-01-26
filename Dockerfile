@@ -16,7 +16,7 @@ RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz; \
     rm -r /install-tl-unx; \
 	rm install-tl-unx.tar.gz
 ENV PATH=/usr/local/texlive/bin/x86_64-linux:$PATH
-RUN tlmgr install preview varwidth amsmath
+RUN tlmgr install preview varwidth standalone xkeyval
 
 WORKDIR .
 
@@ -31,12 +31,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN git clone https://github.com/Snaptraks/physbot.git
 WORKDIR physbot
 
+COPY start.sh ./
 # give permission to execute start script
-RUN chmod +x start.docker.sh
+RUN chmod +x start.sh
 
 # copy config files
 COPY config.py ./
 COPY lexique_physique_filtre.txt ./
 
 # start the Bot
-CMD ["./start.docker.sh"]
+CMD ["./start.sh"]
+# CMD ["python", "PhysBot.py"]
