@@ -73,13 +73,14 @@ if __name__ == '__main__':
     )
 
     startup_extensions = [
-        'cogs.admin',
-        'cogs.memes',
-        'cogs.physum',
-        'cogs.information',
-        'cogs.games',
-        'cogs.TeX',
-        'cogs.WolframAlpha',
+        "cogs.admin",
+        "cogs.memes",
+        "cogs.physum",
+        "cogs.information",
+        "cogs.games",
+        "cogs.TeX",
+        "cogs.WolframAlpha",
+        "cogs.TP",
     ]
 
     for extension in startup_extensions:
