@@ -58,6 +58,7 @@ class TP(commands.Cog):
             empty = self.empty_voice_channels(category_before)
 
             if len(empty) > 1:
+                # assume a format "{PREFIX} {NUMBER}", ie "Voice 0"
                 prefix, number = before.channel.name.split()
                 if number != "0":
                     to_delete = before.channel
