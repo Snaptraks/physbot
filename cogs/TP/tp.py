@@ -36,7 +36,10 @@ class TP(commands.Cog):
                 # assume a format "{PREFIX} {NUMBER}", ie "Voice 0"
                 prefix, number = last_channel_name.split()
                 new_channel_name = f"{prefix} {int(number) + 1}"
-                await category_after.create_voice_channel(new_channel_name)
+                await category_after.create_voice_channel(
+                    new_channel_name,
+                    reason="TP auto create",
+                )
 
     @commands.Cog.listener(name="on_voice_state_update")
     async def delete_voice_channel(self, member, before, after):
@@ -63,7 +66,7 @@ class TP(commands.Cog):
                     # if everyone left from 0, delete the last empty one
                     to_delete = empty[-1]
 
-                await to_delete.delete(reason="Everyone left channel")
+                await to_delete.delete(reason="TP auto delete")
 
     def get_category_channel_of_voice(self, voice_state):
         """Return the category that the voice channel associated with the
