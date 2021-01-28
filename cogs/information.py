@@ -1,4 +1,3 @@
-import aiohttp
 import aiosqlite
 from discord.ext import commands, tasks
 
@@ -43,19 +42,6 @@ class Information(commands.Cog):
             raise _error
 
     # TODO: conseil_delete, conseil_update commands
-
-    @commands.command()
-    async def wiki(self, ctx, *nom_article):
-        if not len(nom_article) == 1:
-            url = "http://fr.wikipedia.org/wiki/" + nom_article[0].capitalize() + "_" +"_".join(nom_article[1:])
-        else:
-            url = "http://fr.wikipedia.org/wiki/" + nom_article[0].capitalize()
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as request:
-                if request:
-                    await ctx.send(url)
-                else:
-                    await ctx.send("Désolé, je n'ai pas réussi à trouver l'article")
 
     @tasks.loop(count=1)
     async def _create_tables(self):
