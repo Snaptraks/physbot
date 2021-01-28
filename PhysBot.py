@@ -47,6 +47,16 @@ class PhysBot(commands.Bot):
         await self.db.close()
         await super().close()
 
+    async def on_ready(self):
+        print(
+            f"Logged in as {self.user.name} (ID:{self.user.id})\n"
+            f"Connected to {len(self.guilds)} guilds\n"
+            f"Connected to {len(set(self.get_all_members()))} users\n"
+            "--------\n"
+            f"Current Discord.py Version: {discord.__version__}\n"
+            "--------"
+        )
+
 
 if __name__ == '__main__':
 
