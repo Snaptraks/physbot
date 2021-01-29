@@ -16,14 +16,12 @@ class TP(commands.Cog):
         """Crée un nouveau VoiceChannel si ceux de la catégorie
         Cours/TP sont tous occupés.
         """
-        category_before = self.get_category_channel_of_voice(before)
         category_after = self.get_category_channel_of_voice(after)
 
         category_after_id = getattr(category_after, "id", None)
 
         connected_to_category = (
             category_after_id == COURS_TP_CATEGORY_ID
-            and category_before != category_after
         )
 
         if connected_to_category:
