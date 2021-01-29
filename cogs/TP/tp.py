@@ -16,6 +16,7 @@ class TP(commands.Cog):
     async def create_voice_channel(self, member, before, after):
         """Crée un nouveau VoiceChannel si ceux de la catégorie
         Cours/TP sont tous occupés.
+        A besoin de la permission "Manage Channels".
         """
         category_after = self.get_category_channel_of_voice(after)
 
@@ -44,6 +45,7 @@ class TP(commands.Cog):
     async def delete_voice_channel(self, member, before, after):
         """Efface le VoiceChannel si il est vide, tout en laissant le
         channel 0.
+        A besoin de la permission "Manage Channels".
         """
         category_before = self.get_category_channel_of_voice(before)
         category_before_id = getattr(category_before, "id", None)
