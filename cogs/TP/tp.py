@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 
 
@@ -65,7 +66,12 @@ class TP(commands.Cog):
                     # if everyone left from 0, delete the last empty one
                     to_delete = empty[-1]
 
-                await to_delete.delete(reason="TP auto delete")
+                try:
+                    await to_delete.delete(reason="TP auto delete")
+
+                except discord.NotFound:
+                    # channel already deleted, probably
+                    pass
 
     def get_category_channel_of_voice(self, voice_state):
         """Return the category that the voice channel associated with the
