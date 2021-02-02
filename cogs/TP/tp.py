@@ -1,9 +1,13 @@
+import re
+
 import discord
 from discord.ext import commands
 
 
-# COURS_TP_CATEGORY_ID = 804385332631175208  # test ID
-COURS_TP_CATEGORY_ID = 801564568450236467
+class NotPrefixNumberFormatError(Exception):
+    """Error raised when a voice channel does not have the
+    <Prefix> <Number> format.
+    """
 
 
 class TP(commands.Cog):
@@ -11,6 +15,7 @@ class TP(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.voice_channel_name_pattern = r"^(.+)\s(\d+)$"
 
     @commands.Cog.listener(name="on_voice_state_update")
     async def create_voice_channel(self, member, before, after):
@@ -18,28 +23,26 @@ class TP(commands.Cog):
         Cours/TP sont tous occupés.
         A besoin de la permission "Manage Channels".
         """
-        category_after = self.get_category_channel_of_voice(after)
+        if after.channel is not None:
+            # if the member connects to a voice channel
+            category_after = self.get_category_channel_of_voice(after)
+            try:
+                prefix, number = self.get_prefix_number(after.channel)
+            except NotPrefixNumberFormatError:
+                return
 
-        category_after_id = getattr(category_after, "id", None)
-
-        connected_to_category = (
-            category_after_id == COURS_TP_CATEGORY_ID
-        )
-
-        if connected_to_category:
             # check number of empty channels
-            empty = self.empty_voice_channels(category_after)
+            prefixed_channels = self.get_matching_voice_channels(
+                category_after, prefix)
+            empty = self.empty_voice_channels(prefixed_channels)
 
             if len(empty) == 0:
-                # if no empty channel, create a new one
-                last_channel_name = category_after.voice_channels[-1].name
-                # assume a format "{PREFIX} {NUMBER}", ie "Voice 0"
-                prefix, number = last_channel_name.split()
-                new_channel_name = f"{prefix} {int(number) + 1}"
-                await category_after.create_voice_channel(
+                new_channel_name = f"{prefix} {number + 1}"
+                new_channel = await category_after.create_voice_channel(
                     new_channel_name,
                     reason="TP auto create",
                 )
+                await new_channel.edit(position=after.channel.position + 1)
 
     @commands.Cog.listener(name="on_voice_state_update")
     async def delete_voice_channel(self, member, before, after):
@@ -47,21 +50,21 @@ class TP(commands.Cog):
         channel 0.
         A besoin de la permission "Manage Channels".
         """
-        category_before = self.get_category_channel_of_voice(before)
-        category_before_id = getattr(category_before, "id", None)
+        if before.channel is not None:
+            # if the member was in a voice channel before
+            category_before = self.get_category_channel_of_voice(before)
+            try:
+                prefix, number = self.get_prefix_number(before.channel)
+            except NotPrefixNumberFormatError:
+                return
 
-        disconnected_from_channel = (
-            category_before_id == COURS_TP_CATEGORY_ID
-        )
-
-        if disconnected_from_channel:
             # check number of empty channels
-            empty = self.empty_voice_channels(category_before)
+            prefixed_channels = self.get_matching_voice_channels(
+                category_before, prefix)
+            empty = self.empty_voice_channels(prefixed_channels)
 
             if len(empty) > 1:
-                # assume a format "{PREFIX} {NUMBER}", ie "Voice 0"
-                prefix, number = before.channel.name.split()
-                if number != "0":
+                if number != 0:
                     to_delete = before.channel
 
                 else:
@@ -75,10 +78,32 @@ class TP(commands.Cog):
                     # channel already deleted, probably
                     pass
 
+    def get_prefix_number(self, channel):
+        """Get the prefix and number of a channel's name, if it is in
+        the format <Prefix> <Number>, otherwise raise SomeError.
+        """
+
+        match = re.fullmatch(self.voice_channel_name_pattern, channel.name)
+        if match:
+            prefix, number = match.group(1, 2)
+            number = int(number)
+            return prefix, number
+
+        else:
+            raise NotPrefixNumberFormatError(
+                f"{channel.name} does not have the right format.")
+
+    def get_matching_voice_channels(self, category, prefix):
+        """Return a list of the voice channels with the matching prefix
+        in the category.
+        """
+        return [vc for vc in category.voice_channels
+                if re.fullmatch(rf"^{prefix}\s\d+$", vc.name)]
+
     def get_category_channel_of_voice(self, voice_state):
         """Return the category that the voice channel associated with the
-        VoiceState is in. Return None if the VoiceState isn't connected
-        to a channel, or the channel is not in a category.
+        VoiceState is in. Return the Guild if the VoiceStateis not in a
+        category or None if it isn't connected.
         """
         try:
             channel = voice_state.channel
@@ -86,9 +111,9 @@ class TP(commands.Cog):
         except AttributeError:
             return None
 
-        return getattr(channel, "category", None)
+        return channel.category or channel.guild
 
-    def empty_voice_channels(self, category):
-        """Return a list of empty VoiceChannels in the category."""
+    def empty_voice_channels(self, channels):
+        """Return a list of empty VoiceChannels in the list channels."""
 
-        return [vc for vc in category.voice_channels if not vc.members]
+        return [vc for vc in channels if not vc.members]
