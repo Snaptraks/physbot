@@ -40,7 +40,7 @@ class Voice(commands.Cog):
                 new_channel_name = f"{prefix} {number + 1}"
                 new_channel = await category_after.create_voice_channel(
                     new_channel_name,
-                    reason="TP auto create",
+                    reason="Channel auto create",
                 )
                 await new_channel.edit(position=after.channel.position + 1)
 
@@ -72,7 +72,7 @@ class Voice(commands.Cog):
                     to_delete = empty[-1]
 
                 try:
-                    await to_delete.delete(reason="TP auto delete")
+                    await to_delete.delete(reason="Channel auto delete")
 
                 except discord.NotFound:
                     # channel already deleted, probably
