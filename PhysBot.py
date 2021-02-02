@@ -80,7 +80,7 @@ if __name__ == '__main__':
         "cogs.games",
         "cogs.TeX",
         "cogs.WolframAlpha",
-        "cogs.TP",
+        "cogs.Voice",
     ]
 
     for extension in startup_extensions:

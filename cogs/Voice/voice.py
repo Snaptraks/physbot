@@ -10,8 +10,8 @@ class NotPrefixNumberFormatError(Exception):
     """
 
 
-class TP(commands.Cog):
-    """Module pour les fonctionnalités reliées aux cours / TP."""
+class Voice(commands.Cog):
+    """Module pour les fonctionnalités reliées aux salons vocaux."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -19,8 +19,8 @@ class TP(commands.Cog):
 
     @commands.Cog.listener(name="on_voice_state_update")
     async def create_voice_channel(self, member, before, after):
-        """Crée un nouveau VoiceChannel si ceux de la catégorie
-        Cours/TP sont tous occupés.
+        """Crée un nouveau VoiceChannel si ceux du format <Prefix> <Number>
+        sont tous occupés.
         A besoin de la permission "Manage Channels".
         """
         if after.channel is not None:
@@ -47,7 +47,7 @@ class TP(commands.Cog):
     @commands.Cog.listener(name="on_voice_state_update")
     async def delete_voice_channel(self, member, before, after):
         """Efface le VoiceChannel si il est vide, tout en laissant le
-        channel 0.
+        channel 1.
         A besoin de la permission "Manage Channels".
         """
         if before.channel is not None:
@@ -64,7 +64,7 @@ class TP(commands.Cog):
             empty = self.empty_voice_channels(prefixed_channels)
 
             if len(empty) > 1:
-                if number != 0:
+                if number != 1:
                     to_delete = before.channel
 
                 else:
