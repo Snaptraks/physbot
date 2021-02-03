@@ -66,12 +66,9 @@ class Voice(commands.Cog):
             empty = self.empty_voice_channels(prefixed_channels)
 
             if len(empty) > 1:
-                if number != 1:
-                    to_delete = before.channel
+                to_delete = empty[-1]  # delete the last empty channel
+                prefix, number = self.get_prefix_number(to_delete)
 
-                else:
-                    # if everyone left from 0, delete the last empty one
-                    to_delete = empty[-1]
 
                 try:
                     await to_delete.delete(reason="Channel auto delete")
