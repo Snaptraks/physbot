@@ -37,12 +37,14 @@ class Voice(commands.Cog):
             empty = self.empty_voice_channels(prefixed_channels)
 
             if len(empty) == 0:
+                last_channel = prefixed_channels[-1]
+                prefix, number = self.get_prefix_number(last_channel)
                 new_channel_name = f"{prefix} {number + 1}"
                 new_channel = await category_after.create_voice_channel(
                     new_channel_name,
                     reason="Channel auto create",
                 )
-                await new_channel.edit(position=after.channel.position + 1)
+                await new_channel.edit(position=last_channel.position + 1)
 
     @commands.Cog.listener(name="on_voice_state_update")
     async def delete_voice_channel(self, member, before, after):
