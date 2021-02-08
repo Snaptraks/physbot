@@ -1,5 +1,5 @@
 aiosqlite==0.16.1
 discord.py==1.6.0
-unidecode==1.1.2
+unidecode==1.2.0
 git+git://github.com/Snaptraks/aiowolframalpha.git
 numpy==1.20.0
