@@ -3,6 +3,7 @@ from datetime import datetime
 
 import discord
 from discord.ext import commands, tasks
+from discord.utils import parse_time
 
 
 class Moderation(commands.Cog):
@@ -15,13 +16,6 @@ class Moderation(commands.Cog):
         return commands.has_guild_permissions(
             administrator=True,
         ).predicate(ctx)
-
-    # TODO: add edited message log
-    @commands.Cog.listener(name="on_raw_message_edit")
-    async def log_edited_message(self, payload):
-        """Save when a message is edited, in the database.
-        Try to save as much information as possible.
-        """
 
     # TODO: add deleted message log
     @commands.Cog.listener(name="on_raw_message_delete")
@@ -50,6 +44,35 @@ class Moderation(commands.Cog):
             })
 
         await self._log_deleted_message(data)
+
+    # TODO: add edited message log
+    @commands.Cog.listener(name="on_raw_message_edit")
+    async def log_edited_message(self, payload):
+        """Save when a message is edited, in the database.
+        Try to save as much information as possible.
+        """
+        if not payload.data.get("content"):
+            # not a content edit
+            return
+
+        data = defaultdict(lambda: None)
+        data.update({
+            "channel_id": payload.channel_id,
+            "message_id": payload.message_id,
+            "edited_at": parse_time(payload.data.get("edited_timestamp")),
+            "content_after": payload.data["content"],  # will always be present
+            "guild_id": payload.data.get("guild_id"),
+        })
+
+        cached_message = payload.cached_message  # can be None
+        if cached_message:
+            data.update({
+                "content_before": cached_message.clean_content,
+                "user_id": cached_message.author.id,
+                "jump_url": cached_message.jump_url,
+            })
+
+        await self._log_edited_message(data)
 
     # TODO: add user info command
     @commands.command(aliases=["user", "user_info", "member"])
@@ -107,21 +130,19 @@ class Moderation(commands.Cog):
         await self.bot.db.execute(
             """
             CREATE TABLE IF NOT EXISTS moderation_editlog(
-                channel_id    INTEGER   NOT NULL,
-                guild_id      INTEGER   NOT NULL,
-                message_id    INTEGER   NOT NULL,
-                deleted_at    TIMESTAMP NOT NULL,
-                clean_content TEXT,
-                user_id       INTEGER,
-                jump_url      TEXT
+                channel_id     INTEGER   NOT NULL,
+                message_id     INTEGER   NOT NULL,
+                edited_at      TIMESTAMP NOT NULL,
+                guild_id       INTEGER,
+                content_before TEXT,
+                content_after  TEXT,
+                user_id        INTEGER,
+                jump_url       TEXT
             )
             """
         )
 
         await self.bot.db.commit()
-
-    async def _log_edited_message(self, data):
-        pass
 
     async def _log_deleted_message(self, data):
         await self.bot.db.execute(
@@ -132,6 +153,24 @@ class Moderation(commands.Cog):
                     :message_id,
                     :deleted_at,
                     :clean_content,
+                    :user_id,
+                    :jump_url)
+            """,
+            data
+        )
+
+        await self.bot.db.commit()
+
+    async def _log_edited_message(self, data):
+        await self.bot.db.execute(
+            """
+            INSERT INTO moderation_editlog
+            VALUES (:channel_id,
+                    :message_id,
+                    :edited_at,
+                    :guild_id,
+                    :content_before,
+                    :content_after,
                     :user_id,
                     :jump_url)
             """,
