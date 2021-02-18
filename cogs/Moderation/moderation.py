@@ -96,7 +96,8 @@ class Moderation(commands.Cog):
         ).add_field(
             name="Member information",
             value=(
-                f"Joined: {member.joined_at}"
+                f"Joined: {member.joined_at}\n"
+                f"{len(member.roles)} roles"
             ),
             inline=False,
         ).set_thumbnail(
