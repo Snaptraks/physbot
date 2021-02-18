@@ -27,7 +27,6 @@ class Moderation(commands.Cog):
             # ignore DM messages
             return
 
-        cached_message = payload.cached_message  # can be None
         data = defaultdict(lambda: None)
         data.update({
             "channel_id": payload.channel_id,
@@ -36,9 +35,10 @@ class Moderation(commands.Cog):
             "deleted_at": datetime.utcnow(),
         })
 
+        cached_message = payload.cached_message  # can be None
         if cached_message:
             data.update({
-                "clean_content": cached_message.clean_content,
+                "content": cached_message.clean_content,
                 "user_id": cached_message.author.id,
                 "jump_url": cached_message.jump_url,
             })
@@ -117,13 +117,13 @@ class Moderation(commands.Cog):
         await self.bot.db.execute(
             """
             CREATE TABLE IF NOT EXISTS moderation_deletelog(
-                channel_id    INTEGER   NOT NULL,
-                guild_id      INTEGER   NOT NULL,
-                message_id    INTEGER   NOT NULL,
-                deleted_at    TIMESTAMP NOT NULL,
-                clean_content TEXT,
-                user_id       INTEGER,
-                jump_url      TEXT
+                channel_id INTEGER   NOT NULL,
+                guild_id   INTEGER   NOT NULL,
+                message_id INTEGER   NOT NULL,
+                deleted_at TIMESTAMP NOT NULL,
+                content    TEXT,
+                user_id    INTEGER,
+                jump_url   TEXT
             )
             """
         )
