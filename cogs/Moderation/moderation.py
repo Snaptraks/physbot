@@ -108,8 +108,6 @@ class Moderation(commands.Cog):
 
         await ctx.reply(embed=embed)
 
-    # TODO: add command to get edited messages
-
     # TODO: add command to get deleted messages
     @commands.group(invoke_without_command=True)
     async def deletelog(self, ctx):
@@ -145,6 +143,10 @@ class Moderation(commands.Cog):
         )
         await menu.start(ctx)
 
+    # TODO: add command to get edited messages
+    @commands.command()
+    async def editlog(self, ctx, message: discord.Message):
+        """Get the revisions of a message."""
 
     @tasks.loop(count=1)
     async def _create_tables(self):
@@ -201,6 +203,8 @@ class Moderation(commands.Cog):
         await self.bot.db.commit()
 
     async def _log_edited_message(self, data):
+        """Save the edited message to the DB."""
+
         await self.bot.db.execute(
             """
             INSERT INTO moderation_editlog
