@@ -5,6 +5,8 @@ import discord
 from discord.ext import commands, tasks
 from discord.utils import parse_time
 
+from . import menus
+
 
 class Moderation(commands.Cog):
     def __init__(self, bot):
@@ -109,6 +111,40 @@ class Moderation(commands.Cog):
     # TODO: add command to get edited messages
 
     # TODO: add command to get deleted messages
+    @commands.group(invoke_without_command=True)
+    async def deletelog(self, ctx):
+        pass
+
+    @deletelog.command(name="member")
+    async def deletelog_member(self, ctx, member: discord.Member,
+                               amount: int = 10):
+        """Get the ``amount`` latest deleted messages of a member."""
+
+        deleted_messages = await self._get_deleted_messages_member(
+            member, amount)
+        # pprint([m["deleted_at"] for m in deleted_messages])
+
+        menu = menus.DeletedMessagesMenu(
+            source=menus.DeletedMessagesSource(deleted_messages),
+            clear_reactions_after=True,
+        )
+        await menu.start(ctx)
+
+    @deletelog.command(name="channel")
+    async def deletelog_channel(self, ctx, channel: discord.TextChannel,
+                                amount: int = 10):
+        """Get the ``amount`` latest deleted messages in a channel."""
+
+        deleted_messages = await self._get_deleted_messages_channel(
+            channel, amount)
+        # pprint([m["deleted_at"] for m in deleted_messages])
+
+        menu = menus.DeletedMessagesMenu(
+            source=menus.DeletedMessagesSource(deleted_messages),
+            clear_reactions_after=True,
+        )
+        await menu.start(ctx)
+
 
     @tasks.loop(count=1)
     async def _create_tables(self):
@@ -146,6 +182,8 @@ class Moderation(commands.Cog):
         await self.bot.db.commit()
 
     async def _log_deleted_message(self, data):
+        """Save the deleted message to the DB."""
+
         await self.bot.db.execute(
             """
             INSERT INTO moderation_deletelog
@@ -153,7 +191,7 @@ class Moderation(commands.Cog):
                     :guild_id,
                     :message_id,
                     :deleted_at,
-                    :clean_content,
+                    :content,
                     :user_id,
                     :jump_url)
             """,
@@ -179,3 +217,43 @@ class Moderation(commands.Cog):
         )
 
         await self.bot.db.commit()
+
+    async def _get_deleted_messages_member(self, member, amount):
+        """Get the ``amount`` latest deleted emssages of a member."""
+
+        async with self.bot.db.execute(
+                """
+                SELECT *
+                FROM moderation_deletelog
+                WHERE user_id = :user_id
+                ORDER BY deleted_at DESC
+                LIMIT :amount
+                """,
+                {
+                    "amount": amount,
+                    "user_id": member.id,
+                }
+        ) as c:
+            rows = await c.fetchall()
+
+        return rows
+
+    async def _get_deleted_messages_channel(self, channel, amount):
+        """Get the ``amount`` latest deleted emssages of a member."""
+
+        async with self.bot.db.execute(
+                """
+                SELECT *
+                FROM moderation_deletelog
+                WHERE channel_id = :channel_id
+                ORDER BY deleted_at DESC
+                LIMIT :amount
+                """,
+                {
+                    "amount": amount,
+                    "channel_id": channel.id,
+                }
+        ) as c:
+            rows = await c.fetchall()
+
+        return rows
