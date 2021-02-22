@@ -43,6 +43,7 @@ class Voice(commands.Cog):
                 new_channel = await category_after.create_voice_channel(
                     new_channel_name,
                     reason="Channel auto create",
+                    bitrate=member.guild.bitrate_limit,
                 )
                 await new_channel.edit(position=last_channel.position + 1)
 
