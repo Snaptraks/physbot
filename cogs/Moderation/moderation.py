@@ -116,7 +116,7 @@ class Moderation(commands.Cog):
     @deletelog.command(name="member")
     async def deletelog_member(self, ctx, member: discord.Member,
                                amount: int = 10):
-        """Get the ``amount`` latest deleted messages of a member."""
+        """Get the `amount` latest deleted messages of a member."""
 
         deleted_messages = await self._get_deleted_messages_member(
             member, amount)
@@ -131,7 +131,7 @@ class Moderation(commands.Cog):
     @deletelog.command(name="channel")
     async def deletelog_channel(self, ctx, channel: discord.TextChannel,
                                 amount: int = 10):
-        """Get the ``amount`` latest deleted messages in a channel."""
+        """Get the `amount` latest deleted messages in a channel."""
 
         deleted_messages = await self._get_deleted_messages_channel(
             channel, amount)
@@ -223,7 +223,7 @@ class Moderation(commands.Cog):
         await self.bot.db.commit()
 
     async def _get_deleted_messages_member(self, member, amount):
-        """Get the ``amount`` latest deleted emssages of a member."""
+        """Get the `amount` latest deleted emssages of a member."""
 
         async with self.bot.db.execute(
                 """
@@ -243,7 +243,7 @@ class Moderation(commands.Cog):
         return rows
 
     async def _get_deleted_messages_channel(self, channel, amount):
-        """Get the ``amount`` latest deleted emssages of a member."""
+        """Get the `amount` latest deleted emssages of a member."""
 
         async with self.bot.db.execute(
                 """
