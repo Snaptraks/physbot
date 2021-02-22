@@ -228,10 +228,10 @@ class Moderation(commands.Cog):
         async with self.bot.db.execute(
                 """
                 SELECT *
-                FROM moderation_deletelog
-                WHERE user_id = :user_id
-                ORDER BY deleted_at DESC
-                LIMIT :amount
+                  FROM moderation_deletelog
+                 WHERE user_id = :user_id
+                 ORDER BY deleted_at DESC
+                 LIMIT :amount
                 """,
                 {
                     "amount": amount,
@@ -248,10 +248,10 @@ class Moderation(commands.Cog):
         async with self.bot.db.execute(
                 """
                 SELECT *
-                FROM moderation_deletelog
-                WHERE channel_id = :channel_id
-                ORDER BY deleted_at DESC
-                LIMIT :amount
+                  FROM moderation_deletelog
+                 WHERE channel_id = :channel_id
+                 ORDER BY deleted_at DESC
+                 LIMIT :amount
                 """,
                 {
                     "amount": amount,
