@@ -1,11 +1,28 @@
 from collections import defaultdict
 from datetime import datetime
+import re
 
 import discord
 from discord.ext import commands, tasks
 from discord.utils import parse_time
 
 from . import menus
+
+
+def _get_id_matches(argument):
+    id_regex = re.compile(
+        r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
+    link_regex = re.compile(
+        r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
+        r'(?:[0-9]{15,21}|@me)'
+        r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
+    )
+    match = id_regex.match(argument) or link_regex.match(argument)
+    if not match:
+        raise commands.MessageNotFound(argument)
+    channel_id = match.group("channel_id")
+    return (int(match.group("message_id")),
+            int(channel_id) if channel_id else None)
 
 
 class Moderation(commands.Cog):
@@ -145,8 +162,63 @@ class Moderation(commands.Cog):
 
     # TODO: add command to get edited messages
     @commands.command()
-    async def editlog(self, ctx, message: discord.Message):
+    async def editlog(self, ctx, message):
         """Get the revisions of a message."""
+
+        # TODO: 1.7, use PartialMessageConverter
+        converter = commands.MessageConverter()
+        try:
+            message = await converter.convert(ctx, message)
+            message_id, channel_id = message.id, message.channel.id
+
+        except commands.MessageNotFound:
+            # works if message was deleted
+            message_id, channel_id = _get_id_matches(message)
+            # 1.7
+            # message_id, channel_id = converter._get_id_matches(message)
+
+        edited_messages = await self._get_edited_messages(
+            message_id, channel_id)
+
+        if len(edited_messages) == 0:
+            await ctx.reply("No edits of this message recorded")
+            return
+
+        if isinstance(message, discord.Message):
+            author = message.author
+            channel = message.channel
+            jump_url = message.jump_url
+
+        description = f"Message sent by {author} in {channel.mention}.\n"
+        if jump_url:
+            description += f"[Jump to message]({jump_url})"
+
+        embed = discord.Embed(
+            title="Message Revisions",
+            description=description,
+            color=discord.Color.red(),
+        ).set_author(
+            name=author,
+        ).add_field(
+            name="Original",
+            value=f"```\n{edited_messages[0]['content_before']}\n```",
+            inline=False,
+        ).add_field(
+            name="Revision 1",
+            value=f"```\n{edited_messages[0]['content_after']}\n```",
+            inline=False,
+        )
+
+        for i, edited in enumerate(edited_messages[1:]):
+            embed.add_field(
+                name=f"Revision {i + 2}",
+                value=f"```\n{edited['content_after']}\n```",
+                inline=False,
+            )
+
+        await ctx.reply(embed=embed)
+
+    # TODO: add error handler for editlog
 
     @tasks.loop(count=1)
     async def _create_tables(self):
@@ -256,6 +328,26 @@ class Moderation(commands.Cog):
                 {
                     "amount": amount,
                     "channel_id": channel.id,
+                }
+        ) as c:
+            rows = await c.fetchall()
+
+        return rows
+
+    async def _get_edited_messages(self, message_id, channel_id):
+        """Get the revisions of a message."""
+
+        async with self.bot.db.execute(
+                """
+                SELECT *
+                  FROM moderation_editlog
+                 WHERE message_id = :message_id
+                   AND channel_id = :channel_id
+                 ORDER BY edited_at
+                """,
+                {
+                    "message_id": message_id,
+                    "channel_id": channel_id,
                 }
         ) as c:
             rows = await c.fetchall()
