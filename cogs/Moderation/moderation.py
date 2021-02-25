@@ -169,6 +169,18 @@ class Moderation(commands.Cog):
         )
         await menu.start(ctx)
 
+    # TODO: add error handler for deletelog
+    @deletelog_member.error
+    @deletelog_channel.error
+    async def deletelog_error(self, ctx, error):
+        """Error handler for the deletelog subcommands."""
+
+        if isinstance(error, commands.BadArgument):
+            await ctx.reply(error)
+
+        else:
+            raise error
+
     # TODO: add command to get edited messages
     @commands.command()
     async def editlog(self, ctx, message):
@@ -238,6 +250,19 @@ class Moderation(commands.Cog):
         await ctx.reply(embed=embed)
 
     # TODO: add error handler for editlog
+    @editlog.error
+    async def editlog_error(self, ctx, error):
+        """Error handler for the editlog command."""
+
+        error = getattr(error, "original", error)
+        if isinstance(error, discord.HTTPException):
+            await ctx.reply("Command output likely too big.")
+
+        elif isinstance(error, commands.BadArgument):
+            await ctx.reply(error)
+
+        else:
+            raise error
 
     @tasks.loop(count=1)
     async def _create_tables(self):
