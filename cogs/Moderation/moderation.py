@@ -25,6 +25,13 @@ def _get_id_matches(argument):
             int(channel_id) if channel_id else None)
 
 
+def find_not_None(sequence, key):
+    """Helper method to find the first entry that is not None in the
+    sequence with the given key.
+    """
+    return discord.utils.find(lambda x: x[key] is not None, sequence)[key]
+
+
 class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -190,10 +197,20 @@ class Moderation(commands.Cog):
             author = message.author
             channel = message.channel
             jump_url = message.jump_url
+            deleted = False
+
+        elif isinstance(message, str):  # to change to PartialMessage in 1.7
+            author = self.bot.get_user(
+                find_not_None(edited_messages, "user_id"))
+            channel = self.bot.get_channel(channel_id)
+            jump_url = find_not_None(edited_messages, "jump_url")
+            deleted = True
 
         description = f"Message sent by {author} in {channel.mention}.\n"
         if jump_url:
             description += f"[Jump to message]({jump_url})"
+            if deleted:
+                description += " (now deleted)"
 
         embed = discord.Embed(
             title="Message Revisions",
