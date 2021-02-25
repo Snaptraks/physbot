@@ -43,7 +43,6 @@ class Moderation(commands.Cog):
             administrator=True,
         ).predicate(ctx)
 
-    # TODO: add deleted message log
     @commands.Cog.listener(name="on_raw_message_delete")
     async def log_deleted_message(self, payload):
         """Save when a message is deleted, in the database.
@@ -71,7 +70,6 @@ class Moderation(commands.Cog):
 
         await self._log_deleted_message(data)
 
-    # TODO: add edited message log
     @commands.Cog.listener(name="on_raw_message_edit")
     async def log_edited_message(self, payload):
         """Save when a message is edited, in the database.
@@ -100,7 +98,6 @@ class Moderation(commands.Cog):
 
         await self._log_edited_message(data)
 
-    # TODO: add user info command
     @commands.command(aliases=["user", "user_info", "member"])
     async def member_info(self, ctx, *, member: discord.Member = None):
         """Return info about a member."""
@@ -132,7 +129,6 @@ class Moderation(commands.Cog):
 
         await ctx.reply(embed=embed)
 
-    # TODO: add command to get deleted messages
     @commands.group(invoke_without_command=True)
     async def deletelog(self, ctx):
         """Command group to see deleted messages of a member or a channel."""
@@ -146,7 +142,6 @@ class Moderation(commands.Cog):
 
         deleted_messages = await self._get_deleted_messages_member(
             member, amount)
-        # pprint([m["deleted_at"] for m in deleted_messages])
 
         menu = menus.DeletedMessagesMenu(
             source=menus.DeletedMessagesSource(deleted_messages),
@@ -161,7 +156,6 @@ class Moderation(commands.Cog):
 
         deleted_messages = await self._get_deleted_messages_channel(
             channel, amount)
-        # pprint([m["deleted_at"] for m in deleted_messages])
 
         menu = menus.DeletedMessagesMenu(
             source=menus.DeletedMessagesSource(deleted_messages),
@@ -169,7 +163,6 @@ class Moderation(commands.Cog):
         )
         await menu.start(ctx)
 
-    # TODO: add error handler for deletelog
     @deletelog_member.error
     @deletelog_channel.error
     async def deletelog_error(self, ctx, error):
@@ -181,7 +174,6 @@ class Moderation(commands.Cog):
         else:
             raise error
 
-    # TODO: add command to get edited messages
     @commands.command()
     async def editlog(self, ctx, message):
         """Get the revisions of a message."""
@@ -249,7 +241,6 @@ class Moderation(commands.Cog):
 
         await ctx.reply(embed=embed)
 
-    # TODO: add error handler for editlog
     @editlog.error
     async def editlog_error(self, ctx, error):
         """Error handler for the editlog command."""
