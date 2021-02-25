@@ -128,7 +128,9 @@ class Moderation(commands.Cog):
     # TODO: add command to get deleted messages
     @commands.group(invoke_without_command=True)
     async def deletelog(self, ctx):
-        pass
+        """Command group to see deleted messages of a member or a channel."""
+
+        await ctx.send_help(ctx.command)
 
     @deletelog.command(name="member")
     async def deletelog_member(self, ctx, member: discord.Member,
