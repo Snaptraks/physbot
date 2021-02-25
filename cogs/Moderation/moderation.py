@@ -88,12 +88,21 @@ class Moderation(commands.Cog):
             "guild_id": payload.data.get("guild_id"),
         })
 
-        cached_message = payload.cached_message  # can be None
-        if cached_message:
+        message = payload.cached_message  # can be None
+        if message is None:
+            channel = self.bot.get_channel(payload.channel_id)
+            # should always be found
+            message = await channel.fetch_message(payload.message_id)
+            content_before = None
+
+        else:
+            content_before = message.content
+
+        if message:
             data.update({
-                "content_before": cached_message.clean_content,
-                "user_id": cached_message.author.id,
-                "jump_url": cached_message.jump_url,
+                "content_before": content_before,
+                "user_id": message.author.id,
+                "jump_url": message.jump_url,
             })
 
         await self._log_edited_message(data)
@@ -247,6 +256,7 @@ class Moderation(commands.Cog):
 
         error = getattr(error, "original", error)
         if isinstance(error, discord.HTTPException):
+            # TODO: have way of checking too-big-to-print edits
             await ctx.reply("Command output likely too big.")
 
         elif isinstance(error, commands.BadArgument):
