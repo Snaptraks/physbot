@@ -35,9 +35,9 @@ Il est possible de vérifier l'installation avec la commande `python -m discord.
 Il est désormais possible de cloner le code dans le répertoire de votre choix.
 
 ### Exécuter le bot localement
-Une fois que les modules sont bien installés, suivez la merche à suivre pour créer votre propre bot:
+Une fois que les modules sont bien installés, suivez la marche à suivre pour créer votre propre bot:
 
 1. [Créer un compte bot](https://discordpy.readthedocs.io/en/latest/discord.html#creating-a-bot-account).
-2. Copier le "token" secret de votre bot dans un fichier appellé `config.py` sous la variable `token` (voire `config.py.example` pour plus de détails).
+2. Copier le "token" secret de votre bot dans un fichier appellé `config.py` sous la variable `token` (voir `config.py.example` pour plus de détails).
 3. [Inviter le bot dans votre serveur](https://discordpy.readthedocs.io/en/latest/discord.html#inviting-your-bot). Je recommande de créer un serveur dédié à ceci, afin de vois assurer d'avoir le contrôle total du bot (et de ses permissions).
 4. Démarrer le bot avec `python PhysBot.py` à partir d'un terminal (il est probable que d'autres méthodes fonctionnent, comme par PyCharm ou Spyder, mais elles n'ont pas été testées).
