@@ -25,7 +25,7 @@ Avant tout, pour pouvoir exécuter le bot, il vous faut Python 3.8+ ainsi que le
 
 Il est possible d'installer rapidement tous les modules avec la commande `pip install -r requirements.txt`
 Il est recommandé de créer un environement virtuel pour le bot (voir [le guide conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html), par exemple).
-Il est possible de vérifier l'installation avec la commande `python -m discord.py -v` qui devrait retourner un message similaire:
+Il est possible de vérifier l'installation avec la commande `python -m discord -v` qui devrait retourner un message similaire:
 ```
 - Python v3.8.5-final
 - discord.py v1.5.1-final
