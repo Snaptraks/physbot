@@ -259,7 +259,8 @@ class Moderation(commands.Cog):
             # TODO: have way of checking too-big-to-print edits
             await ctx.reply("Command output likely too big.")
 
-        elif isinstance(error, commands.BadArgument):
+        elif isinstance(error, (commands.BadArgument,
+                                commands.MissingRequiredArgument)):
             await ctx.reply(error)
 
         else:
