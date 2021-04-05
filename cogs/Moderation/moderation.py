@@ -1,28 +1,11 @@
 from collections import defaultdict
 from datetime import datetime
-import re
 
 import discord
 from discord.ext import commands, tasks
 from discord.utils import parse_time
 
 from . import menus
-
-
-def _get_id_matches(argument):
-    id_regex = re.compile(
-        r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
-    link_regex = re.compile(
-        r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
-        r'(?:[0-9]{15,21}|@me)'
-        r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
-    )
-    match = id_regex.match(argument) or link_regex.match(argument)
-    if not match:
-        raise commands.MessageNotFound(argument)
-    channel_id = match.group("channel_id")
-    return (int(match.group("message_id")),
-            int(channel_id) if channel_id else None)
 
 
 def find_not_None(sequence, key):
@@ -184,20 +167,18 @@ class Moderation(commands.Cog):
             raise error
 
     @commands.command()
-    async def editlog(self, ctx, message):
+    async def editlog(self, ctx, partial_message: discord.PartialMessage):
         """Get the revisions of a message."""
 
-        # TODO: 1.7, use PartialMessageConverter
-        converter = commands.MessageConverter()
         try:
-            message = await converter.convert(ctx, message)
+            message = await partial_message.fetch()
             message_id, channel_id = message.id, message.channel.id
 
-        except commands.MessageNotFound:
+        except discord.NotFound:
             # works if message was deleted
-            message_id, channel_id = _get_id_matches(message)
-            # 1.7
-            # message_id, channel_id = converter._get_id_matches(message)
+            message = partial_message
+            message_id = partial_message.id
+            channel_id = partial_message.channel.id
 
         edited_messages = await self._get_edited_messages(
             message_id, channel_id)
@@ -212,10 +193,10 @@ class Moderation(commands.Cog):
             jump_url = message.jump_url
             deleted = False
 
-        elif isinstance(message, str):  # to change to PartialMessage in 1.7
+        elif isinstance(message, discord.PartialMessage):
             author = self.bot.get_user(
                 find_not_None(edited_messages, "user_id"))
-            channel = self.bot.get_channel(channel_id)
+            channel = message.channel
             jump_url = find_not_None(edited_messages, "jump_url")
             deleted = True
 
