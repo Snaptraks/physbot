@@ -22,7 +22,7 @@ class Admin(commands.Cog):
     async def stop(self, ctx):
         """Stop the bot, and let the process manager handle the reboot."""
 
-        await self.bot.logout()
+        await self.bot.close()
 
 
 def setup(bot):
