@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
+from typing import Union
 
 import discord
 from discord.ext import commands, tasks
@@ -122,18 +123,18 @@ class Moderation(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.group(invoke_without_command=True)
-    async def deletelog(self, ctx):
+    async def deletelog(self, ctx,
+                        msg_source: Union[discord.Member, discord.TextChannel],
+                        amount: int = 10):
         """Command group to see deleted messages of a member or a channel."""
 
-        await ctx.send_help(ctx.command)
+        if isinstance(msg_source, discord.Member):
+            deleted_messages = await self._get_deleted_messages_member(
+                msg_source, amount)
 
-    @deletelog.command(name="member")
-    async def deletelog_member(self, ctx, member: discord.Member,
-                               amount: int = 10):
-        """Get the `amount` latest deleted messages of a member."""
-
-        deleted_messages = await self._get_deleted_messages_member(
-            member, amount)
+        elif isinstance(msg_source, discord.TextChannel):
+            deleted_messages = await self._get_deleted_messages_channel(
+                msg_source, amount)
 
         menu = menus.DeletedMessagesMenu(
             source=menus.DeletedMessagesSource(deleted_messages),
@@ -141,26 +142,11 @@ class Moderation(commands.Cog):
         )
         await menu.start(ctx)
 
-    @deletelog.command(name="channel")
-    async def deletelog_channel(self, ctx, channel: discord.TextChannel,
-                                amount: int = 10):
-        """Get the `amount` latest deleted messages in a channel."""
-
-        deleted_messages = await self._get_deleted_messages_channel(
-            channel, amount)
-
-        menu = menus.DeletedMessagesMenu(
-            source=menus.DeletedMessagesSource(deleted_messages),
-            clear_reactions_after=True,
-        )
-        await menu.start(ctx)
-
-    @deletelog_member.error
-    @deletelog_channel.error
+    @deletelog.error
     async def deletelog_error(self, ctx, error):
         """Error handler for the deletelog subcommands."""
 
-        if isinstance(error, commands.BadArgument):
+        if isinstance(error, commands.BadUnionArgument):
             await ctx.reply(error)
 
         else:

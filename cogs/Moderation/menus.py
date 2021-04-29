@@ -26,10 +26,12 @@ class DeletedMessagesSource(menus.ListPageSource):
         if content is None:
             content = "[Content not in cache or unavailable]"
 
+        msg_source = menu.ctx.args[2]
+
         embed = discord.Embed(
             title=(
                 f"{len(self.entries)} latest deleted messages for "
-                f"{menu.ctx.invoked_with.title()} {menu.ctx.args[2]}"
+                f"{msg_source.__class__.__name__} {msg_source}"
             ),
             description=f"```\n{content}\n```",
             color=discord.Color.red(),
