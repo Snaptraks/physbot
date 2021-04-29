@@ -153,19 +153,11 @@ class Moderation(commands.Cog):
             raise error
 
     @commands.command()
-    async def editlog(self, ctx, partial_message: discord.PartialMessage):
+    async def editlog(self, ctx,
+                      message: Union[discord.Message, discord.PartialMessage]):
         """Get the revisions of a message."""
 
-        try:
-            message = await partial_message.fetch()
-            message_id, channel_id = message.id, message.channel.id
-
-        except discord.NotFound:
-            # works if message was deleted
-            message = partial_message
-            message_id = partial_message.id
-            channel_id = partial_message.channel.id
-
+        message_id, channel_id = message.id, message.channel.id
         edited_messages = await self._get_edited_messages(
             message_id, channel_id)
 
