@@ -96,7 +96,3 @@ class Information(commands.Cog):
         )
 
         await self.bot.db.commit()
-
-
-def setup(bot):
-    bot.add_cog(Information(bot))
