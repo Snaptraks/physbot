@@ -85,7 +85,6 @@ class Information(commands.Cog):
 
         return matched_keys
 
-
     @tasks.loop(count=1)
     async def _create_tables(self):
         """Crée les tables nécessaires, si elles n'existent pas déjà."""
