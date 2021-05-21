@@ -1,5 +1,12 @@
 import aiosqlite
+from fuzzywuzzy import process
 from discord.ext import commands, tasks
+
+
+class WrongKeyError(commands.CommandError):
+    def __init__(self, key):
+        self.key = key
+        super().__init__(f"Il n'y a pas de conseil sous la clé {key}")
 
 
 class Information(commands.Cog):
@@ -13,10 +20,34 @@ class Information(commands.Cog):
 
         row = await self._get_conseil(mots)
         if row is None:
-            await ctx.send("Il n'y a pas de conseil sous cette clé.")
+            raise WrongKeyError(mots)
 
         else:
             await ctx.send(row['conseil'])
+
+    @conseil.error
+    async def conseil_error(self, ctx, error):
+        """Error handler for the conseil command."""
+
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Il faut préciser le conseil à montrer.")
+
+        elif isinstance(error, WrongKeyError):
+            possible_keys = "\n".join(await self.fuzzy_key_search(error.key))
+            prefix = "Il n'y a pas de conseil sous cette clé."
+
+            if possible_keys:  # length not 0
+                content = (
+                    f"{prefix}\n"
+                    f"Vouliez-vous dire:\n```\n{possible_keys}\n```"
+                )
+            else:
+                content = prefix
+
+            await ctx.send(content)
+
+        else:
+            raise error
 
     @conseil.command(name='create')
     async def conseil_create(self, ctx, motclé: str, *, conseil: str):
@@ -42,6 +73,18 @@ class Information(commands.Cog):
             raise _error
 
     # TODO: conseil_delete, conseil_update commands
+
+    async def fuzzy_key_search(self, key):
+        """Search for keys that are similar to the one requested."""
+
+        min_score = 75
+        keys = [row["key"] for row in await self._get_conseil_keys()]
+        extracted = process.extract(key, keys, limit=3)
+
+        matched_keys = [_key for _key, score in extracted if score >= min_score]
+
+        return matched_keys
+
 
     @tasks.loop(count=1)
     async def _create_tables(self):
@@ -75,6 +118,19 @@ class Information(commands.Cog):
             row = await c.fetchone()
 
         return row
+
+    async def _get_conseil_keys(self):
+        """Retourne les keys attachées à tous les conseils."""
+
+        async with self.bot.db.execute(
+                """
+                SELECT key
+                  FROM information_conseil
+                """
+        ) as c:
+            rows = await c.fetchall()
+
+        return rows
 
     async def _save_conseil(self, ctx, key, conseil):
         """Enregistre le conseil dans la base de données."""
