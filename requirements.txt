@@ -5,4 +5,4 @@ Unidecode==1.3.2
 git+git://github.com/Rapptz/discord-ext-menus.git
 git+git://github.com/Snaptraks/aiowolframalpha.git
 fuzzywuzzy
-numpy==1.21.2
+numpy==1.21.3
