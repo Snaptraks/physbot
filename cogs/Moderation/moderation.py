@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
+import re
 from typing import Union
 
 import discord
@@ -7,6 +8,8 @@ from discord.ext import commands, tasks
 from discord.utils import parse_time
 
 from . import menus
+
+ADMIN_CHANNEL = 750166269860249671
 
 
 def find_not_None(sequence, key):
@@ -24,6 +27,42 @@ class Moderation(commands.Cog):
 
     def cog_check(self, ctx):
         return commands.has_guild_permissions(administrator=True,).predicate(ctx)
+
+    @commands.Cog.listener(name="on_message")
+    async def delete_fake_nitro_scam(self, message):
+        url_pattern = (
+            r"(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))"
+            r"([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])"
+        )
+        has_url = re.search(url_pattern, message.content)
+        nitro_message = "Discord is giving away nitro!"
+
+        if nitro_message in message.content and has_url:
+            admin_channel = self.bot.get_channel(ADMIN_CHANNEL) or message.channel
+            scam_author = message.author
+
+            try:
+                await message.delete()
+
+            except discord.Forbidden:
+                is_deleted = "Could not delete"
+
+            else:
+                is_deleted = "Deleted"
+
+            try:
+                await scam_author.ban(reason="Nitro Scam")
+
+            except discord.Forbidden:
+                is_banned = "could not ban"
+
+            else:
+                is_banned = "banned"
+
+            await admin_channel.send(
+                f"{is_deleted} a potential scam message in {message.channel.mention} "
+                f"and {is_banned} user {scam_author} ({scam_author.id})"
+            )
 
     @commands.Cog.listener(name="on_raw_message_delete")
     async def log_deleted_message(self, payload):
