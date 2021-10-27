@@ -12,9 +12,9 @@ class Physum(commands.Cog):
         channel = discord.utils.get(guild.channels, name="rôles")
         if guild.system_channel is not None:
             to_send = (
-                f'Bienvenue {member.mention} dans le serveur de la Physum!\n'
-                f'Choisis ton année et ton programme dans {channel.mention} '
-                'pour avoir accès à plus de salons et de fun :) '
+                f"Bienvenue {member.mention} dans le serveur de la Physum!\n"
+                f"Choisis ton année et ton programme dans {channel.mention} "
+                "pour avoir accès à plus de salons et de fun :) "
             )
             await guild.system_channel.send(to_send)
 
@@ -35,10 +35,8 @@ class Physum(commands.Cog):
         before_role_ids = [role.id for role in before.roles]
         after_role_ids = [role.id for role in after.roles]
 
-        before_has_program = any([id in program_role_ids
-                                 for id in before_role_ids])
-        after_has_program = any([id in program_role_ids
-                                 for id in after_role_ids])
+        before_has_program = any([id in program_role_ids for id in before_role_ids])
+        after_has_program = any([id in program_role_ids for id in after_role_ids])
 
         if before_role_ids != after_role_ids:
             # if the roles changed
