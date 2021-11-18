@@ -77,6 +77,7 @@ if __name__ == "__main__":
         "cogs.games",
         "cogs.Information",
         "cogs.Moderation",
+        "cogs.Roles",
         "cogs.TeX",
         "cogs.WolframAlpha",
         "cogs.Voice",
