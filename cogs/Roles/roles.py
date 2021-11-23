@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from . import views
 
 
@@ -15,6 +15,7 @@ class Roles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.persistent_views_added = False
+        self._create_tables.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -25,3 +26,37 @@ class Roles(commands.Cog):
     async def roles(self, ctx, *, flags: RolesFlags):
         view = views.RolesView(flags.roles)
         await flags.channel.send(flags.content, view=view)
+    @tasks.loop(count=1)
+    async def _create_tables(self):
+        await self.bot.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS roles_view(
+                guild_id   INTEGER NOT NULL,
+                message_id INTEGER UNIQUE,
+                view_id    INTEGER NOT NULL PRIMARY KEY
+            )
+            """
+        )
+
+        await self.bot.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS roles_component(
+                component_id TEXT NOT NULL,
+                name         TEXT NOT NULL,
+                view_id INTEGER NOT NULL,
+                FOREIGN KEY (view_id)
+                    REFERENCES roles_view (view_id)
+            )
+            """
+        )
+
+        await self.bot.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS roles_role(
+                role_id INTEGER NOT NULL,
+                view_id INTEGER NOT NULL,
+                FOREIGN KEY (view_id)
+                    REFERENCES roles_view (view_id)
+            )
+            """
+        )
