@@ -23,7 +23,7 @@ class RolesSelect(Select):
 class RolesView(View):
     def __init__(self, roles: list[discord.Role]):
         select = RolesSelect(roles)
-        super().__init__()
+        super().__init__(timeout=None)
         self.add_item(select)
         self.selected_roles = {}
 
