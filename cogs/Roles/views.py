@@ -1,17 +1,19 @@
+from secrets import token_hex
+
 import discord
 from discord import ButtonStyle
-from discord.ui import View, Button, Select
+from discord.ui import View, Button, Select, Item
 
 
 class RolesSelect(Select):
-    def __init__(self, roles, toggle=False):
+    def __init__(self, roles, custom_id, toggle=False):
         options = [discord.SelectOption(label=role.name) for role in roles]
         self.id_map = {role.name: role.id for role in roles}
         super().__init__(
             placeholder="Select roles",
             options=options,
             max_values=1 if toggle else len(options),
-            custom_id="rolesview:select",
+            custom_id=custom_id,
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -21,40 +23,53 @@ class RolesSelect(Select):
 
 
 class RolesView(View):
-    def __init__(self, roles: list[discord.Role]):
-        select = RolesSelect(roles)
+    def __init__(self, roles: list[discord.Role], components_id: dict[str, str] = None):
         super().__init__(timeout=None)
+
+        if components_id is None:
+            components_id = {
+                "select_id": token_hex(16),
+                "add_id": token_hex(16),
+                "remove_id": token_hex(16),
+            }
+        self.components_id = components_id
+
+        select = RolesSelect(roles, components_id["select_id"])
         self.add_item(select)
         self.selected_roles = {}
 
-    @discord.ui.button(
-        label="Add",
-        style=ButtonStyle.green,
-        emoji="\N{HEAVY PLUS SIGN}",
-        custom_id="rolesview:add",
-        row=4,
-    )
-    async def add_roles(self, button: Button, interaction: discord.Interaction):
-        await self.button_callback("add_roles", interaction)
-
-    @discord.ui.button(
-        label="Remove",
-        style=ButtonStyle.red,
-        emoji="\N{HEAVY MINUS SIGN}",
-        custom_id="rolesview:remove",
-        row=4,
-    )
-    async def remove_roles(self, button: Button, interaction: discord.Interaction):
-        await self.button_callback("remove_roles", interaction)
-
-    async def button_callback(self, method: str, interaction: discord.Interaction):
-        member = interaction.user
-        add_remove_roles = getattr(member, method)
-        await add_remove_roles(*self.selected_roles[member])
-        await interaction.response.send_message(
-            f"Changing roles {self.selected_roles[member]} to {repr(member)}",
-            ephemeral=True,
+        add = Button(
+            label="Add",
+            style=ButtonStyle.green,
+            emoji="\N{HEAVY PLUS SIGN}",
+            custom_id=components_id["add_id"],
+            row=4,
         )
+        add.callback = self.button_callback("add_roles")
+        self.add_item(add)
+
+        remove = Button(
+            label="Remove",
+            style=ButtonStyle.red,
+            emoji="\N{HEAVY MINUS SIGN}",
+            custom_id=components_id["remove_id"],
+            row=4,
+        )
+        remove.callback = self.button_callback("remove_roles")
+        self.add_item(remove)
+
+    def button_callback(self, method: str):
+        async def callback(interaction: discord.Interaction):
+            member = interaction.user
+            add_remove_roles = getattr(member, method)
+            await add_remove_roles(*self.selected_roles[member])
+            roles_str = ", ".join(role.mention for role in self.selected_roles[member])
+            await interaction.response.send_message(
+                f"Changing roles {roles_str} for member {member.mention}",
+                ephemeral=True,
+            )
+
+        return callback
 
     async def on_error(
         self, error: Exception, item: Item, interaction: discord.Interaction
