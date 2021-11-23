@@ -23,9 +23,15 @@ class Roles(commands.Cog):
             self.persistent_views_added = True
 
     @commands.command()
-    async def roles(self, ctx, *, flags: RolesFlags):
+    async def select(self, ctx, *, flags: RolesFlags):
         view = views.RolesView(flags.roles)
         await flags.channel.send(flags.content, view=view)
+
+    @commands.command()
+    async def toggle(self, ctx, *, flags: RolesFlags):
+        view = views.RolesToggleView(flags.roles)
+        await flags.channel.send(flags.content, view=view)
+
     @tasks.loop(count=1)
     async def _create_tables(self):
         await self.bot.db.execute(
