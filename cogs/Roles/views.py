@@ -55,3 +55,14 @@ class RolesView(View):
             f"Changing roles {self.selected_roles[member]} to {repr(member)}",
             ephemeral=True,
         )
+
+    async def on_error(
+        self, error: Exception, item: Item, interaction: discord.Interaction
+    ):
+        if isinstance(error, KeyError):
+            await interaction.response.send_message(
+                "There was an error. You need to select at least one role.",
+                ephemeral=True,
+            )
+        else:
+            raise error
