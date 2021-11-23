@@ -35,12 +35,7 @@ class RolesView(View):
         row=4,
     )
     async def add_roles(self, button: Button, interaction: discord.Interaction):
-        member = interaction.user
-        await member.add_roles(*self.selected_roles[member])
-        await interaction.response.send_message(
-            f"Adding roles {self.selected_roles[member]} to {repr(member)}",
-            ephemeral=True,
-        )
+        await self.button_callback("add_roles", interaction)
 
     @discord.ui.button(
         label="Remove",
@@ -50,9 +45,13 @@ class RolesView(View):
         row=4,
     )
     async def remove_roles(self, button: Button, interaction: discord.Interaction):
+        await self.button_callback("remove_roles", interaction)
+
+    async def button_callback(self, method: str, interaction: discord.Interaction):
         member = interaction.user
-        await member.remove_roles(*self.selected_roles[member])
+        add_remove_roles = getattr(member, method)
+        await add_remove_roles(*self.selected_roles[member])
         await interaction.response.send_message(
-            f"Removing roles {self.selected_roles[member]} to {repr(member)}",
+            f"Changing roles {self.selected_roles[member]} to {repr(member)}",
             ephemeral=True,
         )
