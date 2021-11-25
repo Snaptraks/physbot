@@ -22,15 +22,39 @@ class Roles(commands.Cog):
         if not self.persistent_views_added:
             self.persistent_views_added = True
 
-    @commands.command()
-    async def select(self, ctx, *, flags: RolesFlags):
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.group()
+    async def roles(self, ctx):
+        """Commands to create and manage role selection menus."""
+
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @roles.command(name="select")
+    async def roles_select(self, ctx, *, flags: RolesFlags):
+        """Create a role selection menu, to select many roles from the list."""
+
         view = views.RolesView(flags.roles)
         await flags.channel.send(flags.content, view=view)
 
-    @commands.command()
-    async def toggle(self, ctx, *, flags: RolesFlags):
+    @roles.command(name="toggle")
+    async def roles_toggle(self, ctx, *, flags: RolesFlags):
+        """Create a role toggle menu, to select only one role from the list."""
+
         view = views.RolesToggleView(flags.roles)
         await flags.channel.send(flags.content, view=view)
+
+    @roles.command(name="add")
+    async def roles_add(self, ctx):
+        """Add a role to the selection list."""
+
+        pass
+
+    @roles.command(name="delete")
+    async def roles_delete(self, ctx):
+        """Delete a role from the selection list."""
+
+        pass
 
     @tasks.loop(count=1)
     async def _create_tables(self):
@@ -49,7 +73,7 @@ class Roles(commands.Cog):
             CREATE TABLE IF NOT EXISTS roles_component(
                 component_id TEXT NOT NULL,
                 name         TEXT NOT NULL,
-                view_id INTEGER NOT NULL,
+                view_id      INTEGER NOT NULL,
                 FOREIGN KEY (view_id)
                     REFERENCES roles_view (view_id)
             )
