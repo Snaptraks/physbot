@@ -30,13 +30,13 @@ class RolesView(View):
 
         if components_id is None:
             components_id = {
-                "select_id": token_hex(16),
-                "add_id": token_hex(16),
-                "remove_id": token_hex(16),
+                "select": token_hex(16),
+                "add": token_hex(16),
+                "remove": token_hex(16),
             }
         self.components_id = components_id
 
-        select = RolesSelect(roles, custom_id=components_id["select_id"])
+        select = RolesSelect(roles, custom_id=components_id["select"])
         self.add_item(select)
         self.selected_roles = {}
 
@@ -44,7 +44,7 @@ class RolesView(View):
             label="Add",
             style=ButtonStyle.green,
             emoji="\N{HEAVY PLUS SIGN}",
-            custom_id=components_id["add_id"],
+            custom_id=components_id["add"],
             row=4,
         )
         add.callback = self.button_callback("add_roles")
@@ -54,7 +54,7 @@ class RolesView(View):
             label="Remove",
             style=ButtonStyle.red,
             emoji="\N{HEAVY MINUS SIGN}",
-            custom_id=components_id["remove_id"],
+            custom_id=components_id["remove"],
             row=4,
         )
         remove.callback = self.button_callback("remove_roles")
@@ -113,20 +113,20 @@ class RolesToggleView(View):
 
         if components_id is None:
             components_id = {
-                "select_id": token_hex(16),
-                "clear_id": token_hex(16),
+                "select": token_hex(16),
+                "clear": token_hex(16),
             }
         self.components_id = components_id
         self.roles = roles
 
-        select = RolesToggleSelect(roles, custom_id=components_id["select_id"])
+        select = RolesToggleSelect(roles, custom_id=components_id["select"])
         self.add_item(select)
 
         clear = Button(
             label="Clear",
             style=ButtonStyle.red,
             emoji="\N{HEAVY MINUS SIGN}",
-            custom_id=components_id["clear_id"],
+            custom_id=components_id["clear"],
             row=4,
         )
         clear.callback = self.clear_callback
