@@ -102,7 +102,7 @@ class RolesToggleSelect(RolesSelect):
         await member.add_roles(selected_role)
 
         await interaction.response.send_message(
-            f"Changing roles {selected_role.mention} for member {member.mention}.",
+            f"Setting role {selected_role.mention} for member {member.mention}.",
             ephemeral=True,
         )
 
