@@ -25,7 +25,7 @@ class Roles(commands.Cog):
             self.persistent_views_added = True
 
     @commands.has_guild_permissions(manage_roles=True)
-    @commands.group()
+    @commands.group(aliases=["role"])
     async def roles(self, ctx):
         """Commands to create and manage role selection menus."""
 
