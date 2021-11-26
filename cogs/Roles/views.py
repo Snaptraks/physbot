@@ -35,6 +35,7 @@ class RolesView(View):
                 "remove": token_hex(16),
             }
         self.components_id = components_id
+        self.roles = roles
 
         select = RolesSelect(roles, custom_id=components_id["select"])
         self.add_item(select)

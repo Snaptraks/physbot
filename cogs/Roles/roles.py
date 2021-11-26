@@ -37,14 +37,16 @@ class Roles(commands.Cog):
         """Create a role selection menu, to select many roles from the list."""
 
         view = views.RolesView(flags.roles)
-        await flags.channel.send(flags.content, view=view)
+        message = await flags.channel.send(flags.content, view=view)
+        await self.save_persistent_view(view, message)
 
     @roles.command(name="toggle")
     async def roles_toggle(self, ctx, *, flags: RolesFlags):
         """Create a role toggle menu, to select only one role from the list."""
 
         view = views.RolesToggleView(flags.roles)
-        await flags.channel.send(flags.content, view=view)
+        message = await flags.channel.send(flags.content, view=view)
+        await self.save_persistent_view(view, message)
 
     @roles.command(name="add")
     async def roles_add(self, ctx):
@@ -59,7 +61,6 @@ class Roles(commands.Cog):
         pass
 
     async def load_persistent_views(self):
-        print("loading views")
         for view in await self._get_views():
             guild = self.bot.get_guild(view["guild_id"])
 
@@ -85,6 +86,25 @@ class Roles(commands.Cog):
                 view_type(roles, components_id=components_id),
                 message_id=view["message_id"],
             )
+
+    async def save_persistent_view(self, view, message):
+        view_payload = dict(guild_id=message.guild.id, message_id=message.id)
+
+        if isinstance(view, views.RolesView):
+            view_payload["view_type"] = "select"
+        elif isinstance(view, views.RolesToggleView):
+            view_payload["view_type"] = "toggle"
+
+        view_id = await self._save_view(view_payload)
+
+        components_payload = [
+            dict(name=key, component_id=val, view_id=view_id)
+            for key, val in view.components_id.items()
+        ]
+        await self._save_components(components_payload)
+
+        roles_payload = [dict(role_id=role.id, view_id=view_id) for role in view.roles]
+        await self._save_roles(roles_payload)
 
     @tasks.loop(count=1)
     async def _create_tables(self):
@@ -158,3 +178,46 @@ class Roles(commands.Cog):
             rows = await c.fetchall()
 
         return rows
+
+    async def _save_view(self, payload):
+        row = await self.bot.db.execute_insert(
+            """
+            INSERT INTO roles_view(guild_id,
+                                   message_id,
+                                   view_type)
+            VALUES (:guild_id,
+                    :message_id,
+                    :view_type)
+            """,
+            payload,
+        )
+
+        await self.bot.db.commit()
+
+        view_id = row[0]
+        return view_id
+
+    async def _save_components(self, payload):
+        await self.bot.db.executemany(
+            """
+            INSERT INTO roles_component
+            VALUES (:component_id,
+                    :name,
+                    :view_id)
+            """,
+            payload,
+        )
+
+        await self.bot.db.commit()
+
+    async def _save_roles(self, payload):
+        await self.bot.db.executemany(
+            """
+            INSERT INTO roles_role
+            VALUES (:role_id,
+                    :view_id)
+            """,
+            payload,
+        )
+
+        await self.bot.db.commit()
