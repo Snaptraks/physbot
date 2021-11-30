@@ -41,15 +41,38 @@ class Roles(commands.Cog):
 
     @roles.command(name="select")
     async def roles_select(self, ctx, *, flags: RolesCreateFlags):
-        """Create a role selection menu, to select many roles from the list."""
+        """Create a role selection menu, to select many roles from the list.
+        Members can select many roles from the list to assign to themselves.
 
+        Flags:
+            channel: The channel to send the message to. Channel name, ID or
+                     mention works
+            content: The content of the message to be sent.
+                alias: message
+            roles: A space-separated list of roles. Role name, ID or mention works.
+
+        Ex: roles select roles: @Role1 @Role2 message: Select some roles!
+            channel: #general
+        """
         view = views.RolesView(flags.roles)
         message = await flags.channel.send(flags.content, view=view)
         await self.save_persistent_view(view, message)
 
     @roles.command(name="toggle")
     async def roles_toggle(self, ctx, *, flags: RolesCreateFlags):
-        """Create a role toggle menu, to select only one role from the list."""
+        """Create a role toggle menu, to select only one role from the list.
+        Members can select only one role from the list to assign to themselves.
+
+        Flags:
+            channel: The channel to send the message to. Channel name, ID or
+                     mention works
+            content: The content of the message to be sent.
+                alias: message
+            roles: A space-separated list of roles. Role name, ID or mention works.
+
+        Ex: roles toggle roles: @Role1 @Role2 message: Select one roles!
+            channel: #general
+        """
 
         view = views.RolesToggleView(flags.roles)
         message = await flags.channel.send(flags.content, view=view)
@@ -57,7 +80,14 @@ class Roles(commands.Cog):
 
     @roles.command(name="add")
     async def roles_add(self, ctx, *, flags: RolesAddRemoveFlags):
-        """Add a role to the selection list."""
+        """Add a role to the selection list.
+
+        Flags:
+            message: ID or URL to the message containing a selection menu.
+            roles: A space-separated list of roles. Role name, ID or mention works.
+
+        Ex: roles add message: 123456789123456789 roles: @Role1 @Role2
+        """
 
         execute = self.roles_add_remove("save")
         embed = await execute(flags.message, flags.roles)
@@ -66,7 +96,14 @@ class Roles(commands.Cog):
 
     @roles.command(name="remove")
     async def roles_remove(self, ctx, *, flags: RolesAddRemoveFlags):
-        """Remove a role from the selection list."""
+        """Remove a role from the selection list.
+
+        Flags:
+            message: ID or URL to the message containing a selection menu.
+            roles: A space-separated list of roles. Role name, ID or mention works.
+
+        Ex: roles remove message: 123456789123456789 roles: @Role1 @Role2
+        """
 
         execute = self.roles_add_remove("delete")
         embed = await execute(flags.message, flags.roles)
@@ -117,7 +154,9 @@ class Roles(commands.Cog):
     async def roles_delete(
         self, ctx, message: Union[discord.Message, discord.PartialMessage]
     ):
-        """Delete a role selection menu."""
+        """Delete a selection menu and its message.
+        Argument `message` needs to be the mesage ID or URL.
+        """
 
         await self._delete_view_from_message(message)
         await message.delete()
@@ -138,7 +177,10 @@ class Roles(commands.Cog):
         *,
         content: str,
     ):
-        """Edit the content of a role selection message."""
+        """Edit the content of a role selection message.
+        Argument `message` needs to be the mesage ID or URL. It must be a
+        message sent by the bot!
+        """
 
         await message.edit(content=content)
 
