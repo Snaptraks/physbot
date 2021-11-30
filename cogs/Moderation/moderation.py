@@ -105,11 +105,15 @@ class Moderation(commands.Cog):
             return
 
         data = defaultdict(lambda: None)
+        edited_at = (
+            parse_time(payload.data.get("edited_timestamp")) or discord.utils.utcnow()
+        )
+
         data.update(
             {
                 "channel_id": payload.channel_id,
                 "message_id": payload.message_id,
-                "edited_at": parse_time(payload.data.get("edited_timestamp")),
+                "edited_at": edited_at,
                 "content_after": payload.data["content"],  # will always be present
                 "guild_id": payload.data.get("guild_id"),
             }
