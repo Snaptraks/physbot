@@ -5,11 +5,16 @@ from discord.ext import commands, tasks
 from . import views
 
 
-class RolesFlags(commands.FlagConverter):
+class RolesCreateFlags(commands.FlagConverter):
     channel: discord.TextChannel = commands.flag(default=lambda ctx: ctx.channel)
     content: str = commands.flag(
         default="Select from the following roles:", aliases=["message"]
     )
+    roles: tuple[discord.Role, ...]  # able to add more than one with the flag
+
+
+class RolesAddDeleteFlags(commands.FlagConverter):
+    message: Union[discord.Message, discord.PartialMessage]
     roles: tuple[discord.Role, ...]  # able to add more than one with the flag
 
 
@@ -35,7 +40,7 @@ class Roles(commands.Cog):
             await ctx.send_help(ctx.command)
 
     @roles.command(name="select")
-    async def roles_select(self, ctx, *, flags: RolesFlags):
+    async def roles_select(self, ctx, *, flags: RolesCreateFlags):
         """Create a role selection menu, to select many roles from the list."""
 
         view = views.RolesView(flags.roles)
@@ -43,7 +48,7 @@ class Roles(commands.Cog):
         await self.save_persistent_view(view, message)
 
     @roles.command(name="toggle")
-    async def roles_toggle(self, ctx, *, flags: RolesFlags):
+    async def roles_toggle(self, ctx, *, flags: RolesCreateFlags):
         """Create a role toggle menu, to select only one role from the list."""
 
         view = views.RolesToggleView(flags.roles)
@@ -51,48 +56,39 @@ class Roles(commands.Cog):
         await self.save_persistent_view(view, message)
 
     @roles.command(name="add")
-    async def roles_add(
-        self,
-        ctx,
-        message: Union[discord.Message, discord.PartialMessage],
-        role: discord.Role,
-    ):
+    async def roles_add(self, ctx, *, flags: RolesAddDeleteFlags):
         """Add a role to the selection list."""
 
         execute = self.roles_add_delete("save")
-        embed = await execute(message, role)
+        embed = await execute(flags.message, flags.roles)
 
         await ctx.reply(embed=embed)
 
     @roles.command(name="delete")
-    async def roles_delete(
-        self,
-        ctx,
-        message: Union[discord.Message, discord.PartialMessage],
-        role: discord.Role,
-    ):
+    async def roles_delete(self, ctx, *, flags: RolesAddDeleteFlags):
         """Delete a role from the selection list."""
 
         execute = self.roles_add_delete("delete")
-        embed = await execute(message, role)
+        embed = await execute(flags.message, flags.roles)
 
         await ctx.reply(embed=embed)
 
     def roles_add_delete(self, method):
-        async def execute(message, role):
+        async def execute(message, roles):
 
             view_data = await self._get_view_from_message(message)
             await getattr(self, f"_{method}_roles")(
-                [dict(role_id=role.id, view_id=view_data["view_id"])]
+                [dict(role_id=role.id, view_id=view_data["view_id"]) for role in roles]
             )
             await message.edit(view=await self.build_view(view_data))
 
+            roles_str = ", ".join(role.mention for role in roles)
             verb = dict(delete="removed from", save="added to")
             embed = discord.Embed(
                 color=discord.Color.green(),
                 title="Successfully edited selection.",
                 description=(
-                    f"Role {role.mention} {verb[method]} the "
+                    f"Role(s) {roles_str} {verb[method]} the "
                     f"[message]({message.jump_url})."
                 ),
             )
@@ -104,8 +100,15 @@ class Roles(commands.Cog):
     @roles_add.error
     @roles_delete.error
     async def roles_add_delete_error(self, ctx, error):
-        if isinstance(error, commands.BadUnionArgument):
+        if isinstance(error, (commands.RoleNotFound, commands.MissingFlagArgument,),):
             await ctx.reply(error)
+
+        elif isinstance(error, commands.BadUnionArgument):
+            await ctx.reply(
+                "Message not found. "
+                "You might need to use the format `{channel ID}-{message ID}` "
+                "(shift-clicking on “Copy ID”) or the message URL."
+            )
 
         else:
             raise error
