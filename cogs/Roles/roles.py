@@ -13,7 +13,7 @@ class RolesCreateFlags(commands.FlagConverter):
     roles: tuple[discord.Role, ...]  # able to add more than one with the flag
 
 
-class RolesAddDeleteFlags(commands.FlagConverter):
+class RolesAddRemoveFlags(commands.FlagConverter):
     message: Union[discord.Message, discord.PartialMessage]
     roles: tuple[discord.Role, ...]  # able to add more than one with the flag
 
@@ -56,24 +56,24 @@ class Roles(commands.Cog):
         await self.save_persistent_view(view, message)
 
     @roles.command(name="add")
-    async def roles_add(self, ctx, *, flags: RolesAddDeleteFlags):
+    async def roles_add(self, ctx, *, flags: RolesAddRemoveFlags):
         """Add a role to the selection list."""
 
-        execute = self.roles_add_delete("save")
+        execute = self.roles_add_remove("save")
         embed = await execute(flags.message, flags.roles)
 
         await ctx.reply(embed=embed)
 
-    @roles.command(name="delete")
-    async def roles_delete(self, ctx, *, flags: RolesAddDeleteFlags):
-        """Delete a role from the selection list."""
+    @roles.command(name="remove")
+    async def roles_remove(self, ctx, *, flags: RolesAddRemoveFlags):
+        """Remove a role from the selection list."""
 
-        execute = self.roles_add_delete("delete")
+        execute = self.roles_add_remove("delete")
         embed = await execute(flags.message, flags.roles)
 
         await ctx.reply(embed=embed)
 
-    def roles_add_delete(self, method):
+    def roles_add_remove(self, method):
         async def execute(message, roles):
 
             view_data = await self._get_view_from_message(message)
@@ -98,8 +98,8 @@ class Roles(commands.Cog):
         return execute
 
     @roles_add.error
-    @roles_delete.error
-    async def roles_add_delete_error(self, ctx, error):
+    @roles_remove.error
+    async def roles_add_remove_error(self, ctx, error):
         if isinstance(error, (commands.RoleNotFound, commands.MissingFlagArgument,),):
             await ctx.reply(error)
 
