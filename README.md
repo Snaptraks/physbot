@@ -21,7 +21,7 @@ Pour contribuer au niveau du code, il va être nécessaire de pouvoir exécuter 
 La section qui suit détaille le processus à suivre.
 
 ### Dépendances
-Avant tout, pour pouvoir exécuter le bot, il vous faut Python 3.8+ ainsi que les modules énumérés dans `requirements.txt`.
+Avant tout, pour pouvoir exécuter le bot, il vous faut Python 3.9+ ainsi que les modules énumérés dans `requirements.txt`.
 
 Il est possible d'installer rapidement tous les modules avec la commande `pip install -r requirements.txt`
 Il est recommandé de créer un environement virtuel pour le bot (voir [le guide conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html), par exemple).
