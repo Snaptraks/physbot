@@ -130,6 +130,29 @@ class Roles(commands.Cog):
 
         await ctx.reply(embed=embed)
 
+    @roles.command(name="edit")
+    async def roles_edit(
+        self,
+        ctx,
+        message: Union[discord.Message, discord.PartialMessage],
+        *,
+        content: str,
+    ):
+        """Edit the content of a role selection message."""
+
+        await message.edit(content=content)
+
+        embed = discord.Embed(
+            color=discord.Color.green(),
+            title="Successfully edited message.",
+            description=(
+                f"[Message]({message.jump_url}) content was edited to\n"
+                f"```\n{content}\n```"
+            ),
+        )
+
+        await ctx.reply(embed=embed)
+
     async def load_persistent_views(self):
         for view_data in await self._get_all_views():
             self.bot.add_view(
