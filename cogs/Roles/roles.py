@@ -113,6 +113,23 @@ class Roles(commands.Cog):
         else:
             raise error
 
+    @roles.command(name="delete")
+    async def roles_delete(
+        self, ctx, message: Union[discord.Message, discord.PartialMessage]
+    ):
+        """Delete a role selection menu."""
+
+        await self._delete_view_from_message(message)
+        await message.delete()
+
+        embed = discord.Embed(
+            color=discord.Color.green(),
+            title="Successfully deleted selection.",
+            description="Message was deleted, and removed from memory.",
+        )
+
+        await ctx.reply(embed=embed)
+
     async def load_persistent_views(self):
         for view_data in await self._get_all_views():
             self.bot.add_view(
@@ -184,6 +201,7 @@ class Roles(commands.Cog):
                 view_id      INTEGER NOT NULL,
                 FOREIGN KEY (view_id)
                     REFERENCES roles_view (view_id)
+                    ON DELETE  CASCADE
             )
             """
         )
@@ -195,6 +213,7 @@ class Roles(commands.Cog):
                 view_id INTEGER NOT NULL,
                 FOREIGN KEY (view_id)
                     REFERENCES roles_view (view_id)
+                    ON DELETE  CASCADE
             )
             """
         )
@@ -303,6 +322,20 @@ class Roles(commands.Cog):
              WHERE role_id=:role_id
             """,
             payload,
+        )
+
+        await self.bot.db.commit()
+
+    async def _delete_view_from_message(self, message):
+        """Delete the view and all the referencing rows in the other tables."""
+
+        # delete should cascade
+        await self.bot.db.execute(
+            """
+            DELETE FROM roles_view
+             WHERE message_id=:message_id
+            """,
+            dict(message_id=message.id),
         )
 
         await self.bot.db.commit()
