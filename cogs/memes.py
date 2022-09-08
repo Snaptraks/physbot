@@ -59,28 +59,35 @@ class Memes(commands.Cog):
             print(f"Someone tried to look at NSFW memes:\n{submission.url}")
             return await ctx.reply("https://i.redd.it/cah38y4p41f51.png")
 
-        embed = discord.Embed(
-            color=0xFF4500,
-            title=submission.title,
-            url=f"https://www.reddit.com{submission.permalink}",
-            description=submission.selftext,
-            timestamp=datetime.utcfromtimestamp(submission.created_utc),
-        ).set_image(
-            url=submission.url,
-        ).set_author(
-            name=submission.author.name,
-            url=f"https://www.reddit.com/u/{submission.author.name}",
-            icon_url=submission.author.icon_img,
-        ).set_footer(
-            text="  •  ".join([
-                f"{submission.score} points",
-                f"{submission.num_comments} comments",
-                "Published on",
-            ]),
+        embed = (
+            discord.Embed(
+                color=0xFF4500,
+                title=submission.title,
+                url=f"https://www.reddit.com{submission.permalink}",
+                description=submission.selftext,
+                timestamp=datetime.utcfromtimestamp(submission.created_utc),
+            )
+            .set_image(
+                url=submission.url,
+            )
+            .set_author(
+                name=submission.author.name,
+                url=f"https://www.reddit.com/u/{submission.author.name}",
+                icon_url=submission.author.icon_img,
+            )
+            .set_footer(
+                text="  •  ".join(
+                    [
+                        f"{submission.score} points",
+                        f"{submission.num_comments} comments",
+                        "Published on",
+                    ]
+                ),
+            )
         )
 
         await ctx.reply(embed=embed)
 
 
-def setup(bot):
-    bot.add_cog(Memes(bot))
+async def setup(bot):
+    await bot.add_cog(Memes(bot))

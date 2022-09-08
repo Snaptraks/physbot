@@ -58,5 +58,5 @@ class Physum(commands.Cog):
                 raise
 
 
-def setup(bot):
-    bot.add_cog(Physum(bot))
+async def setup(bot):
+    await bot.add_cog(Physum(bot))

@@ -8,12 +8,12 @@ import string
 from . import emoji
 
 
-with open('lexique_physique_filtre.txt', encoding='utf-8') as f:
-    WORD_LIST = f.read().split('\n')
+with open("lexique_physique_filtre.txt", encoding="utf-8") as f:
+    WORD_LIST = f.read().split("\n")
 
 CANCEL = [
-    'cancel',
-    'stop',
+    "cancel",
+    "stop",
 ]
 
 HANGMAN_LIMBS = [
@@ -33,7 +33,7 @@ class Hangman:
     def __init__(self, ctx, bot):
         self.ctx = ctx
         self.bot = bot
-        word, url = np.random.choice(WORD_LIST).split(', ')
+        word, url = np.random.choice(WORD_LIST).split(", ")
         # word, url = WORD_LIST[49].split(', ')
         self.word_undecoded = word
         self.word_to_guess = unidecode.unidecode(word).lower()
@@ -43,24 +43,30 @@ class Hangman:
         self.bad_guesses = []
         self.good_guesses = []
 
-        self.embed = discord.Embed(
-            title=None,
-            color=np.random.randint(0xFFFFFF),  # Random color
-        ).set_author(
-            name=self.ctx.author.display_name,
-            icon_url=self.ctx.author.avatar_url_as(static_format='png'),
-        ).add_field(
-            name='Pendu',
-            value=None,  # will be filled later
-            inline=True,
-        ).add_field(
-            name='Mauvaises lettres',
-            value=None,
-            inline=True,
-        ).add_field(
-            name='Devine le mot!',
-            value='Aucune',  # will be filled after
-            inline=False,
+        self.embed = (
+            discord.Embed(
+                title=None,
+                color=np.random.randint(0xFFFFFF),  # Random color
+            )
+            .set_author(
+                name=self.ctx.author.display_name,
+                icon_url=self.ctx.author.avatar_url_as(static_format="png"),
+            )
+            .add_field(
+                name="Pendu",
+                value=None,  # will be filled later
+                inline=True,
+            )
+            .add_field(
+                name="Mauvaises lettres",
+                value=None,
+                inline=True,
+            )
+            .add_field(
+                name="Devine le mot!",
+                value="Aucune",  # will be filled after
+                inline=False,
+            )
         )
 
     async def play(self):
@@ -70,10 +76,7 @@ class Hangman:
             valid = (
                 message.author == self.ctx.author
                 and message.channel == self.ctx.channel
-                and (
-                    len(message.content) == 1
-                    or message.content.lower() in CANCEL
-                )
+                and (len(message.content) == 1 or message.content.lower() in CANCEL)
             )
             return valid
 
@@ -85,7 +88,7 @@ class Hangman:
 
             try:
                 guess_message = await self.bot.wait_for(
-                    'message',
+                    "message",
                     timeout=5 * 60,  # 5 minutes
                     check=check,
                 )
@@ -128,8 +131,8 @@ class Hangman:
             )
         else:
             hint_message = (
-                f'Tu as perdu! Le mot était [{self.word_undecoded}]'
-                f'({self.word_url}).'
+                f"Tu as perdu! Le mot était [{self.word_undecoded}]"
+                f"({self.word_url})."
             )
 
         self.update_embed(hint_message)
@@ -165,15 +168,15 @@ class Hangman:
 
             characters.append(str(character))
 
-        current_progress = '\U000000A0'.join(characters)
+        current_progress = "\U000000A0".join(characters)
 
-        bad_guesses_str = ' '.join(c.upper() for c in self.bad_guesses)
+        bad_guesses_str = " ".join(c.upper() for c in self.bad_guesses)
         # if it is an empty string, the Embed will complain
         if not bad_guesses_str:
             bad_guesses_str = None
 
         graphics = self.make_graphics(len(self.bad_guesses))
-        graphics_str = '\n'.join(''.join(line) for line in graphics.T)
+        graphics_str = "\n".join("".join(line) for line in graphics.T)
 
         self.embed.set_field_at(
             index=0,  # graphics
@@ -211,7 +214,7 @@ class Games(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=['hangman'])
+    @commands.command(aliases=["hangman"])
     @commands.max_concurrency(1, commands.BucketType.channel)
     async def pendu(self, ctx):
         """Joue une partie de pendu à thématique physique."""
@@ -225,11 +228,12 @@ class Games(commands.Cog):
 
         if isinstance(error, commands.MaxConcurrencyReached):
             error_msg = await ctx.send(
-                "Seulement une partie de pendu peut être active à la fois")
+                "Seulement une partie de pendu peut être active à la fois"
+            )
             await ctx.message.delete()
             await asyncio.sleep(5)
             await error_msg.delete()
 
 
-def setup(bot):
-    bot.add_cog(Games(bot))
+async def setup(bot):
+    await bot.add_cog(Games(bot))

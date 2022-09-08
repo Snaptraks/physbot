@@ -1,5 +1,5 @@
 from .tex import TeX
 
 
-def setup(bot):
-    bot.add_cog(TeX(bot))
+async def setup(bot):
+    await bot.add_cog(TeX(bot))
