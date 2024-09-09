@@ -6,4 +6,4 @@ git+https://github.com/Rapptz/discord-ext-menus.git
 git+https://github.com/Snaptraks/aiowolframalpha.git
 git+https://github.com/Snaptraks/SnapCogs.git
 fuzzywuzzy
-numpy==2.1.0
+numpy==2.1.1
