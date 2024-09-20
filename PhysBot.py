@@ -2,8 +2,8 @@ import logging
 
 import discord
 from discord.ext import commands
-
 from snapcogs import Bot
+
 import config
 
 
@@ -22,9 +22,6 @@ def main():
         "snapcogs.Admin",
         "snapcogs.Information",
         "snapcogs.Fun",
-        "snapcogs.Poll",
-        "snapcogs.Roles",
-        "snapcogs.Tips",
     ]
 
     bot = Bot(

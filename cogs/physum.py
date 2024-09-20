@@ -9,11 +9,10 @@ class Physum(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         guild = member.guild
-        channel = discord.utils.get(guild.channels, name="rôles")
         if guild.system_channel is not None:
             to_send = (
                 f"Bienvenue {member.mention} dans le serveur de la Physum!\n"
-                f"Choisis ton année et ton programme dans {channel.mention} "
+                "Choisis ton année et ton programme dans la section Salons et Rôles "
                 "pour avoir accès à plus de salons et de fun :) "
             )
             await guild.system_channel.send(to_send)
