@@ -1,11 +1,14 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y wget
 
 # additional repositories for fonts
-RUN sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
+RUN wget https://gist.githubusercontent.com/hakerdefo/5e1f51fa93ff37871b9ff738b05ba30f/raw/7b5a0ff76b7f963c52f2b33baa20d8c4033bce4d/sources.list -O /etc/apt/sources.list
+# RUN sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
 
 # install linux packages
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget git poppler-utils ttf-mscorefonts-installer && \
+    apt-get install -y --no-install-recommends git poppler-utils ttf-mscorefonts-installer && \
     apt-get purge -y --auto-remove && \
     rm -rf /var/lib/apt/lists/*
 
